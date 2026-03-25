@@ -12,13 +12,19 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
-            $table->rememberToken();
-            $table->timestamps();
+                $table->id();
+                $table->string('name');
+                $table->string('email')->unique();
+                $table->timestamp('email_verified_at')->nullable();
+                $table->string('password');
+                $table->rememberToken();
+                $table->timestamps();
+
+                // === NYA FÄLT FÖR VÅR RPG ===
+                $table->integer('xp')->default(0);           // Total XP
+                $table->integer('level')->default(1);        // Nivå
+                $table->string('avatar')->nullable();        // T.ex. "avatars/warrior.png"
+                $table->string('title')->default('Student'); // Titel som "Scholar"
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {

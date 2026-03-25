@@ -12,6 +12,23 @@ class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
+        // Relationer till våra nya tabeller
+    public function studySessions() { return $this->hasMany(StudySession::class); }
+    public function bosses() { return $this->hasMany(Boss::class); }
+    public function quests() { return $this->hasMany(Quest::class); }
+
+    // Automatisk level-up (RPG-känsla)
+    public function getLevelAttribute()
+    {
+        return max(1, floor(sqrt($this->xp / 25)) + 1);
+    }
+
+    // Titel baserat på level
+    public function getTitleAttribute()
+    {
+        $titles = ['Student', 'Scholar', 'Mastermind', 'Legend'];
+        return $titles[min(floor($this->level / 10), 3)];
+    }
 
     /**
      * The attributes that are mass assignable.
