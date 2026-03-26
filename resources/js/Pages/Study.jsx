@@ -1,38 +1,37 @@
 import React from 'react';
 import { usePage } from '@inertiajs/react';
+import StudyTimer from '../Components/StudyTimer';
+import ProgressBar from '../Components/ProgressBar';
 
 export default function Study() {
-  const { auth, sessions, flash } = usePage().props;
+  const { auth, flash } = usePage().props;
 
   return (
-    <div className="p-8 max-w-4xl mx-auto">
-      <h1 className="text-4xl font-bold mb-2">📚 Study Mode</h1>
-      <p className="text-xl text-gray-600 mb-8">
-        Välkommen {auth.user.name}! Du är level <span className="font-bold">{auth.user.level}</span>
-      </p>
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-5xl font-bold text-center mb-2">📖 Plugga som ett RPG</h1>
+        <p className="text-center text-xl text-gray-600 mb-10">
+          Du är <span className="font-bold">{auth.user.title}</span> • Level {auth.user.level}
+        </p>
 
-      {/* Enkel XP-info */}
-      <div className="bg-white shadow rounded-xl p-6 mb-8">
-        <div className="flex justify-between items-center">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Timer */}
           <div>
-            <p className="text-sm text-gray-500">Total XP</p>
-            <p className="text-5xl font-bold text-blue-600">{auth.user.xp}</p>
+            <StudyTimer />
           </div>
-          <div className="text-right">
-            <p className="text-sm text-gray-500">Nuvarande titel</p>
-            <p className="text-2xl font-semibold">{auth.user.title}</p>
+
+          {/* XP & Level */}
+          <div className="bg-white rounded-3xl shadow-xl p-8">
+            <ProgressBar currentXP={auth.user.xp} level={auth.user.level} />
           </div>
         </div>
+
+        {flash?.success && (
+          <div className="mt-8 bg-green-100 border border-green-400 text-green-800 px-6 py-4 rounded-2xl text-center font-medium">
+            {flash.success}
+          </div>
+        )}
       </div>
-
-      <h2 className="text-2xl font-semibold mb-4">Senaste pluggsessioner</h2>
-      <p className="text-gray-500">Inga sessioner ännu (vi lägger till timern nästa steg)</p>
-
-      {flash?.success && (
-        <div className="mt-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
-          {flash.success}
-        </div>
-      )}
     </div>
   );
 }
