@@ -13,7 +13,7 @@ return new class extends Migration
 {
     Schema::create('study_sessions', function (Blueprint $table) {
         $table->id();
-        $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+        $table->foreignId('user_id')->constrained()->OnDelete('Cascade');
         $table->integer('minutes');
         $table->integer('xp_earned');
         $table->timestamps();
