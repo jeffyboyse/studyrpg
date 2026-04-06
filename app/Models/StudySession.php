@@ -14,5 +14,6 @@ class StudySession extends Model
         'user_id',
         'minutes',
         'xp_earned',
+        'subject',
     ];
 }
