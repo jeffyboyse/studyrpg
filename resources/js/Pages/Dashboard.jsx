@@ -1,7 +1,5 @@
 // resources/js/Pages/Dashboard.jsx
 import { Link, usePage } from '@inertiajs/react';
-import ProgressBar from '@/Components/ProgressBar';
-import StudyTimer from '@/Components/StudyTimer';
 
 export default function Dashboard() {
     const { auth } = usePage().props;
@@ -24,13 +22,7 @@ export default function Dashboard() {
                     </p>
                 </div>
 
-                {/* ProgressBar */}
-                <ProgressBar 
-                    xp={user.xp} 
-                    level={user.level} 
-                    nextLevelXp={nextLevelXp} 
-                />
-               <StudyTimer />
+            
 
                 {/* Navigationsknappar (Game Menu) */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12">

@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 
 class StudyController extends Controller
 {
+    //  Visar study-sidan med användarens data
     public function index()
     {
         $user = Auth::user();
@@ -18,52 +19,31 @@ class StudyController extends Controller
         ]);
     }
 
+    // Sparar en study session när timern skickar data
     public function store(Request $request)
     {
+        //  Validerar att "minutes" skickas med och är ett heltal >= 1
         $request->validate([
             'minutes' => 'required|integer|min:1',
-            'subject' => 'required|string',
         ]);
 
+        //  Beräknar XP (10 XP per minut)
         $xp = $request->minutes * 10;
 
+        //  Skapar en ny rad i study_sessions-tabellen
         StudySession::create([
             'user_id'   => Auth::id(),
             'minutes'   => $request->minutes,
             'xp_earned' => $xp,
-            'subject'   => $request->subject,
+            
         ]);
 
+        //  Lägger till XP till användaren och sparar
         $user = Auth::user();
         $user->xp += $xp;
         $user->save();
 
-        // === mobs ===
-        $quizzes = [
-            'Engelska' => [
-                ['q' => 'What is the past tense of "go"?', 'a' => 'went', 'options' => ['goed', 'went', 'gone', 'go']],
-                ['q' => 'How do you say "Hej" in English?', 'a' => 'Hello', 'options' => ['Goodbye', 'Hello', 'Thanks', 'Sorry']],
-                ['q' => 'What does "however" mean?', 'a' => 'Men', 'options' => ['Och', 'Men', 'Eller', 'Fast']],
-            ],
-            'Matte' => [
-                ['q' => 'Vad är 12 × 8?', 'a' => '96', 'options' => ['86', '96', '104', '112']],
-                ['q' => 'Vad är roten ur 64?', 'a' => '8', 'options' => ['6', '7', '8', '9']],
-                ['q' => 'Vad är 25% av 200?', 'a' => '50', 'options' => ['40', '50', '60', '75']],
-            ],
-            'Historia' => [
-                ['q' => 'När startade andra världskriget?', 'a' => '1939', 'options' => ['1914', '1939', '1945', '1918']],
-                ['q' => 'Vem var Sveriges första kvinnliga statsminister?', 'a' => 'Magdalena Andersson', 'options' => ['Anna Lindh', 'Magdalena Andersson', 'Annie Lööf', 'Ulla Löfven']],
-            ],
-            // Kan lägga till fler ämnen senare, eller använda en databas eller API istället för att hårdkoda frågorna
-        ];
-
-        $questions = $quizzes[$request->subject] ?? $quizzes['Engelska'];
-
-        return redirect()->back()->with([
-            'success'    => "Session sparad! Du fick {$xp} XP.",
-            'subject'    => $request->subject,
-            'questions'  => $questions,
-            'bonusXP'    => 30   // om man klarar quizzen :cheeky, man kommer inte klara det:>
-        ]);
+        //  Skickar tillbaka användaren till study-sidan med ett meddelande
+        return redirect()->back()->with('success', "Du fick {$xp} XP! Ny level: {$user->level}");
     }
 }

@@ -20,6 +20,8 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
+    Route::get('/bosses', [BossController::class, 'index'])->name('bosses');
+    Route::post('/bosses/{boss}/damage', [BossController::class, 'damage'])->name('boss.damage');
     Route::get('/study', [StudyController::class, 'index'])->name('study');
     Route::post('/study', [StudyController::class, 'store']);
 });

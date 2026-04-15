@@ -1,77 +1,91 @@
 // resources/js/Components/StudyTimer.jsx
 
-// Importerar Reacts inbyggda funktioner 
 import { useState, useEffect } from 'react';
+import ProgressBar from '@/Components/ProgressBar';
+import { router, usePage } from '@inertiajs/react';
 
-// Importerar router från Inertia för att kunna skicka data till backend
-import { router } from '@inertiajs/react';
-
-// Skapar och exporterar komponenten så den kan användas på andra sidor
 export default function StudyTimer() {
 
-    //Skapar tre state-variabler
-    const [seconds, setSeconds] = useState(0);        // Räknar sekunder som gått
-    const [isRunning, setIsRunning] = useState(false); // Är timern igång?
-    const [totalMinutes, setTotalMinutes] = useState(0); // Hur många hela minuter vi har sparat
+    const { auth } = usePage().props;
+    const user = auth.user;
 
-    // useEffect som startar/stannar timer-intervall varje sekund
+    // Beräknar XP-gränsen för nästa level. Formel: level² × 25
+    const nextLevelXp = Math.pow(user.level, 2) * 25;
+
+    const [seconds, setSeconds] = useState(0);
+    const [isRunning, setIsRunning] = useState(false);
+    const [subject, setSubject] = useState('Engelska'); // Valt ämne, default Engelska
+
     useEffect(() => {
         let interval = null;
         if (isRunning) {
             interval = setInterval(() => {
-                setSeconds(s => s + 1);   // Ökar sekunder med 1 varje sekund
+                setSeconds(s => s + 1);
             }, 1000);
         }
-        return () => clearInterval(interval); // Städar upp när komponenten tas bort
-    }, [isRunning]);  // Kör om när isRunning ändras
+        return () => clearInterval(interval);
+    }, [isRunning]);
 
-    // useEffect som sparar XP varje gång en hel minut har gått
-    useEffect(() => {
-        if (seconds > 0 && seconds % 60 === 0) {        // Varje gång vi nått en hel minut
-            const minutes = Math.floor(seconds / 60);   // Omvandlar sekunder till minuter
-            setTotalMinutes(minutes);
+    const toggleTimer = () => setIsRunning(!isRunning);
 
-            // Skickar POST till /study så StudyController sparar XP i databasen
-            router.post('/study', { minutes: minutes });
-        }
-    }, [seconds]);  // Kör om varje gång seconds ändras
-
-    //Funktion som startar/pausar timern
-    const toggleTimer = () => {
-        setIsRunning(!isRunning);
-    };
-
-    //Funktion som nollställer timern
     const resetTimer = () => {
         setSeconds(0);
         setIsRunning(false);
-        setTotalMinutes(0);
     };
 
-    // Beräknar vad som ska visas (minuter och sekunder med nollor)
+    // Sparar sessionen — skickar minuter och ämne till backend
+    const saveSession = () => {
+        const minutes = Math.floor(seconds / 60);
+
+        // Kräver minst 1 minut för att kunna spara
+        if (minutes < 1) return;
+
+        setIsRunning(false); // Pausar timern
+
+        router.post('/study', { minutes, subject }, {
+            preserveScroll: true,
+            preserveState: true,
+        });
+    };
+
     const displayMinutes = Math.floor(seconds / 60);
     const displaySeconds = seconds % 60;
+    const earnedXp = displayMinutes * 10; // XP som kommer sparas
 
-    // Returnerar JSX som är det som syns på skärmen
     return (
         <div className="bg-white rounded-3xl shadow-xl p-10 max-w-md mx-auto">
             <div className="text-center">
-                {/* Rubrik */}
                 <h2 className="text-2xl font-bold text-gray-800 mb-8">Study Timer</h2>
 
-                {/* Stor timer-visning */}
-                <div className="text-8xl font-mono font-bold text-indigo-600 mb-10">
+                {/* ProgressBar synkad med verklig XP från databasen */}
+                <ProgressBar
+                    xp={user.xp}
+                    level={user.level}
+                    nextLevelXp={nextLevelXp}
+                />
+
+                <div className="text-8xl font-mono font-bold text-indigo-600 my-10">
                     {displayMinutes.toString().padStart(2, '0')}:
                     {displaySeconds.toString().padStart(2, '0')}
                 </div>
 
-                {/* Knappar */}
-                <div className="flex gap-4 justify-center">
+                {/* Dropdown för att välja ämne */}
+                <select
+                    value={subject}
+                    onChange={e => setSubject(e.target.value)}
+                    className="w-full mb-6 px-4 py-3 rounded-xl border border-gray-200 text-gray-700 font-medium"
+                >
+                    <option>Engelska</option>
+                    <option>Matte</option>
+                    <option>Historia</option>
+                </select>
+
+                <div className="flex gap-4 justify-center mb-4">
                     <button
                         onClick={toggleTimer}
                         className={`px-10 py-4 rounded-2xl text-lg font-semibold transition-all ${
-                            isRunning 
-                                ? 'bg-red-500 hover:bg-red-600 text-white' 
+                            isRunning
+                                ? 'bg-red-500 hover:bg-red-600 text-white'
                                 : 'bg-emerald-500 hover:bg-emerald-600 text-white'
                         }`}
                     >
@@ -86,12 +100,20 @@ export default function StudyTimer() {
                     </button>
                 </div>
 
-                {/*Visar info efter varje sparad minut */}
-                {totalMinutes > 0 && (
-                    <p className="mt-6 text-sm text-gray-500">
-                        Denna session: {totalMinutes} minuter → {totalMinutes * 10} XP
-                    </p>
-                )}
+                {/* Spara-knapp — grå och inaktiv om mindre än 1 minut har gått */}
+                <button
+                    onClick={saveSession}
+                    disabled={displayMinutes < 1}
+                    className={`w-full py-4 rounded-2xl text-lg font-semibold transition-all ${
+                        displayMinutes >= 1
+                            ? 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                            : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    }`}
+                >
+                    {displayMinutes >= 1
+                        ? `💾 Spara session (+${earnedXp} XP)`
+                        : 'Studera minst 1 minut för att spara'}
+                </button>
             </div>
         </div>
     );
