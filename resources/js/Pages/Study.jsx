@@ -1,57 +1,27 @@
-import React, { useState, useEffect } from 'react';
-import { usePage } from '@inertiajs/react';
-import StudyTimer from '../Components/StudyTimer';
-import ProgressBar from '../Components/ProgressBar';
-import QuizModal from '../Components/QuizModal';
+// resources/js/Pages/Study.jsx
 
+//Importerar Inertia-hjälp och vår timer-komponent
+import { Head } from '@inertiajs/react';
+import StudyTimer from '@/Components/StudyTimer';
+
+//Skapar Study-sidan
 export default function Study() {
-  const { auth, flash } = usePage().props;
-  const [showQuiz, setShowQuiz] = useState(false);
-  const [quizData, setQuizData] = useState(null);
+    return (
+        <>
+            {/*Sätter sidans titel i webbläsaren */}
+            <Head title="Study Timer - Plugga som ett RPG" />
 
-  // Show quiz when flash data arrives after saving session
-  useEffect(() => {
-    if (flash?.questions) {
-      setQuizData({
-        subject: flash.subject,
-        questions: flash.questions,
-        bonusXP: flash.bonusXP
-      });
-      setShowQuiz(true);
-    }
-  }, [flash]);
+            <div className="min-h-screen bg-gray-50 py-12">
+                <div className="max-w-2xl mx-auto px-4">
+                    <h1 className="text-4xl font-bold text-center mb-8">🎮 Study Mode</h1>
+                    <p className="text-center text-gray-600 mb-10">
+                        1 minut = 10 XP • Plugga och levla upp!
+                    </p>
 
-  return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-5xl font-bold text-center mb-2">📖 XP Farm</h1>
-        <p className="text-center text-xl text-gray-600 mb-10">
-          Du är <span className="font-bold">{auth.user.title}</span> • Level {auth.user.level}
-        </p>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <StudyTimer />
-          <div className="bg-white rounded-3xl shadow-xl p-8">
-            <ProgressBar currentXP={auth.user.xp} level={auth.user.level} />
-          </div>
-        </div>
-
-        {flash?.success && (
-          <div className="mt-8 bg-green-100 border border-green-400 text-green-800 px-6 py-4 rounded-2xl text-center font-medium">
-            {flash.success}
-          </div>
-        )}
-      </div>
-
-      {/* the new mob, Quiz Modal*/}
-      {showQuiz && quizData && (
-        <QuizModal
-          subject={quizData.subject}
-          questions={quizData.questions}
-          bonusXP={quizData.bonusXP}
-          onClose={() => setShowQuiz(false)}
-        />
-      )}
-    </div>
-  );
+                    {/*Här visas timern */}
+                    <StudyTimer />
+                </div>
+            </div>
+        </>
+    );
 }

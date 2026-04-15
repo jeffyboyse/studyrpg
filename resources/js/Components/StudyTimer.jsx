@@ -1,79 +1,98 @@
-import React, { useState, useEffect } from 'react';
-import { Inertia } from '@inertiajs/inertia';
+// resources/js/Components/StudyTimer.jsx
 
-const subjects = ['Engelska', 'Matte', 'Historia', 'Svenska', 'Teknik', 'Fysik', 'Kemi'];
+// Importerar Reacts inbyggda funktioner 
+import { useState, useEffect } from 'react';
 
+// Importerar router från Inertia för att kunna skicka data till backend
+import { router } from '@inertiajs/react';
+
+// Skapar och exporterar komponenten så den kan användas på andra sidor
 export default function StudyTimer() {
-  const [seconds, setSeconds] = useState(0);
-  const [isRunning, setIsRunning] = useState(false);
-  const [selectedSubject, setSelectedSubject] = useState(null);
 
-  useEffect(() => {
-    let interval = null;
-    if (isRunning) {
-      interval = setInterval(() => setSeconds(s => s + 1), 1000);
-    }
-    return () => clearInterval(interval);
-  }, [isRunning]);
+    //Skapar tre state-variabler
+    const [seconds, setSeconds] = useState(0);        // Räknar sekunder som gått
+    const [isRunning, setIsRunning] = useState(false); // Är timern igång?
+    const [totalMinutes, setTotalMinutes] = useState(0); // Hur många hela minuter vi har sparat
 
-  const minutes = Math.floor(seconds / 60);
+    // useEffect som startar/stannar timer-intervall varje sekund
+    useEffect(() => {
+        let interval = null;
+        if (isRunning) {
+            interval = setInterval(() => {
+                setSeconds(s => s + 1);   // Ökar sekunder med 1 varje sekund
+            }, 1000);
+        }
+        return () => clearInterval(interval); // Städar upp när komponenten tas bort
+    }, [isRunning]);  // Kör om när isRunning ändras
 
-  const saveSession = () => {
-    if (minutes > 0 && selectedSubject) {
-      Inertia.post('/study', { 
-        minutes: minutes, 
-        subject: selectedSubject 
-      });
-      setSeconds(0);
-      setIsRunning(false);
-    }
-  };
+    // useEffect som sparar XP varje gång en hel minut har gått
+    useEffect(() => {
+        if (seconds > 0 && seconds % 60 === 0) {        // Varje gång vi nått en hel minut
+            const minutes = Math.floor(seconds / 60);   // Omvandlar sekunder till minuter
+            setTotalMinutes(minutes);
 
-  return (
-    <div className="bg-white shadow-xl rounded-3xl p-8 text-center">
-      <h2 className="text-2xl font-bold mb-4">⏳ Study Timer</h2>
+            // Skickar POST till /study så StudyController sparar XP i databasen
+            router.post('/study', { minutes: minutes });
+        }
+    }, [seconds]);  // Kör om varje gång seconds ändras
 
-      {/* Ämnesväljare */}
-      <div className="flex flex-wrap gap-2 justify-center mb-6">
-        {subjects.map(subject => (
-          <button
-            key={subject}
-            onClick={() => setSelectedSubject(subject)}
-            className={`px-5 py-2 rounded-2xl text-sm font-medium transition-all ${
-              selectedSubject === subject 
-                ? 'bg-purple-600 text-white' 
-                : 'bg-gray-100 hover:bg-gray-200'
-            }`}
-          >
-            {subject}
-          </button>
-        ))}
-      </div>
+    //Funktion som startar/pausar timern
+    const toggleTimer = () => {
+        setIsRunning(!isRunning);
+    };
 
-      <div className="text-7xl font-mono mb-8">
-        {String(minutes).padStart(2, '0')}:{String(seconds % 60).padStart(2, '0')}
-      </div>
+    //Funktion som nollställer timern
+    const resetTimer = () => {
+        setSeconds(0);
+        setIsRunning(false);
+        setTotalMinutes(0);
+    };
 
-      <div className="flex gap-4 justify-center">
-        <button
-          onClick={() => setIsRunning(!isRunning)}
-          className={`px-8 py-4 rounded-2xl text-white font-bold text-lg transition-all ${
-            isRunning ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'
-          }`}
-        >
-          {isRunning ? '⏸ Pausa' : '▶ Starta'}
-        </button>
+    // Beräknar vad som ska visas (minuter och sekunder med nollor)
+    const displayMinutes = Math.floor(seconds / 60);
+    const displaySeconds = seconds % 60;
 
-        <button
-          onClick={saveSession}
-          disabled={minutes === 0 || !selectedSubject}
-          className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg rounded-2xl transition-all disabled:opacity-50"
-        >
-          ✅ Spara ({minutes} min = {minutes * 10} XP)
-        </button>
-      </div>
+    // Returnerar JSX som är det som syns på skärmen
+    return (
+        <div className="bg-white rounded-3xl shadow-xl p-10 max-w-md mx-auto">
+            <div className="text-center">
+                {/* Rubrik */}
+                <h2 className="text-2xl font-bold text-gray-800 mb-8">Study Timer</h2>
 
-      {!selectedSubject && <p className="text-red-500 text-sm mt-4">Välj ett ämne först!</p>}
-    </div>
-  );
+                {/* Stor timer-visning */}
+                <div className="text-8xl font-mono font-bold text-indigo-600 mb-10">
+                    {displayMinutes.toString().padStart(2, '0')}:
+                    {displaySeconds.toString().padStart(2, '0')}
+                </div>
+
+                {/* Knappar */}
+                <div className="flex gap-4 justify-center">
+                    <button
+                        onClick={toggleTimer}
+                        className={`px-10 py-4 rounded-2xl text-lg font-semibold transition-all ${
+                            isRunning 
+                                ? 'bg-red-500 hover:bg-red-600 text-white' 
+                                : 'bg-emerald-500 hover:bg-emerald-600 text-white'
+                        }`}
+                    >
+                        {isRunning ? 'PAUSA' : 'STARTA'}
+                    </button>
+
+                    <button
+                        onClick={resetTimer}
+                        className="px-8 py-4 rounded-2xl text-lg font-semibold bg-gray-200 hover:bg-gray-300 transition-all"
+                    >
+                        ÅTERSTÄLL
+                    </button>
+                </div>
+
+                {/*Visar info efter varje sparad minut */}
+                {totalMinutes > 0 && (
+                    <p className="mt-6 text-sm text-gray-500">
+                        Denna session: {totalMinutes} minuter → {totalMinutes * 10} XP
+                    </p>
+                )}
+            </div>
+        </div>
+    );
 }

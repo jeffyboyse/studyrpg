@@ -1,7 +1,16 @@
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head } from '@inertiajs/react';
+// resources/js/Pages/Dashboard.jsx
+import { Link, usePage } from '@inertiajs/react';
+import ProgressBar from '@/Components/ProgressBar';
+import StudyTimer from '@/Components/StudyTimer';
 
 export default function Dashboard() {
+    const { auth } = usePage().props;
+    const user = auth.user;
+
+    // Beräkna XP som behövs till nästa level (enkel formel)
+    const currentLevelXp = Math.pow((user.level - 1), 2) * 25;
+    const nextLevelXp = Math.pow(user.level, 2) * 25;
+
     return (
         <div className="min-h-screen bg-gray-50 py-12">
             <div className="max-w-4xl mx-auto px-4">
@@ -21,6 +30,7 @@ export default function Dashboard() {
                     level={user.level} 
                     nextLevelXp={nextLevelXp} 
                 />
+               <StudyTimer />
 
                 {/* Navigationsknappar (Game Menu) */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12">
@@ -51,15 +61,16 @@ export default function Dashboard() {
                         <p className="text-gray-600">Få bonus XP varje dag</p>
                     </Link>
 
-            <div className="py-12">
-                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                    <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
-                        <div className="p-6 text-gray-900">
-                            You're logged in!
-                        </div>
-                    </div>
+                    <Link
+                        href="/profile"
+                        className="bg-white p-8 rounded-2xl shadow hover:shadow-xl transition-all group"
+                    >
+                        <div className="text-6xl mb-4">🧙</div>
+                        <h2 className="text-2xl font-semibold mb-2">Min Karaktär</h2>
+                        <p className="text-gray-600">Avatar, titlar & statistik</p>
+                    </Link>
                 </div>
             </div>
-        </AuthenticatedLayout>
+        </div>
     );
 }
