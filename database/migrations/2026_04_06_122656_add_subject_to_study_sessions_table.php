@@ -11,9 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('study_sessions', function (Blueprint $table) {´
+        Schema::table('study_sessions', function (Blueprint $table) {
             $table->string('subject')->nullable()->after('xp_earned');
         });
+
+            
+       
     }
 
     /**
@@ -22,7 +25,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('study_sessions', function (Blueprint $table) {
-            //
+            $table->dropColumn('subject');
         });
     }
 };
