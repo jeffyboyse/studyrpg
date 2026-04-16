@@ -19,31 +19,29 @@ class StudyController extends Controller
         ]);
     }
 
-    // Sparar en study session när timern skickar data
     public function store(Request $request)
     {
-        //  Validerar att "minutes" skickas med och är ett heltal >= 1
+        // Kontrollerar att minutes skickades med, är ett heltal och minst 1
         $request->validate([
             'minutes' => 'required|integer|min:1',
         ]);
 
-        //  Beräknar XP (10 XP per minut)
+        // 10 XP per minut
         $xp = $request->minutes * 10;
 
-        //  Skapar en ny rad i study_sessions-tabellen
+        // Sparar sessionen i databasen
         StudySession::create([
             'user_id'   => Auth::id(),
             'minutes'   => $request->minutes,
             'xp_earned' => $xp,
-            
         ]);
 
-        //  Lägger till XP till användaren och sparar
+        // Lägger till XP på användaren och sparar
         $user = Auth::user();
         $user->xp += $xp;
         $user->save();
 
-        //  Skickar tillbaka användaren till study-sidan med ett meddelande
+        // Skickar tillbaka till study-sidan med ett bekräftelsemeddelande
         return redirect()->back()->with('success', "Du fick {$xp} XP! Ny level: {$user->level}");
     }
 }
