@@ -9,12 +9,12 @@ use Illuminate\Support\Facades\Auth;
 
 class StudyController extends Controller
 {
-    //  Visar study-sidan med användarens data
+    // Visar study-sidan med användarens data och 5 senaste sessioner
     public function index()
     {
         $user = Auth::user();
         return Inertia::render('Study', [
-            'user' => $user,
+            'user'     => $user,
             'sessions' => $user->studySessions()->latest()->take(5)->get(),
         ]);
     }
