@@ -71,4 +71,4 @@ The Laravel framework is open-sourced software licensed under the [MIT license](
 
 
 
-Jag tänker ska en api för antigen mina bosses, eller för min study session där man kan hämta sin study session för att fortsätta kanske för att något kom upp och man var tvungen att sluta. För bosses kan jag nog göra en api som hämtar quizes och frågor från olika sidor, jag kan sedan anropa de frågorna som mina bosses. Idag så tänkte jag på hur jag skulle kunna göra en api och använda det. Så från och med nu ska jag börja med api för bosses eftersom jag skulle fortsätta med bosses på min sida.
+Jag tänker ska göra en api för antigen mina bosses, eller för min study session där man kan hämta sin study session för att fortsätta kanske för att något kom upp och man var tvungen att sluta. För bosses ska jag nog göra en api som hämtar quizes och frågor från olika sidor, jag ska sedan anropa de frågorna som mina bosses. Idag så tänkte jag på hur jag skulle kunna göra en api och använda det. Så från och med nu ska jag börja med api för bosses eftersom jag skulle fortsätta med bosses på min sida.
