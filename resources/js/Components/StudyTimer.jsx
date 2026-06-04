@@ -1,21 +1,18 @@
-// resources/js/Components/StudyTimer.jsx
-
 import { useState, useEffect } from 'react';
 import ProgressBar from '@/Components/ProgressBar';
 import { router, usePage } from '@inertiajs/react';
-
-export default function StudyTimer() {
-
+ 
+export default function StudyTimer({ onSaved }) {
+ 
     const { auth } = usePage().props;
     const user = auth.user;
-
-    // Beräknar XP-gränsen för nästa level. Formel: level² × 25
+ 
     const nextLevelXp = Math.pow(user.level, 2) * 25;
-
+ 
     const [seconds, setSeconds] = useState(0);
     const [isRunning, setIsRunning] = useState(false);
-    const [subject, setSubject] = useState('Engelska'); // Valt ämne, default Engelska
-
+    const [subject, setSubject] = useState('Engelska');
+ 
     useEffect(() => {
         let interval = null;
         if (isRunning) {
@@ -25,51 +22,50 @@ export default function StudyTimer() {
         }
         return () => clearInterval(interval);
     }, [isRunning]);
-
+ 
     const toggleTimer = () => setIsRunning(!isRunning);
-
+ 
     const resetTimer = () => {
         setSeconds(0);
         setIsRunning(false);
     };
-
-    // Sparar sessionen — skickar minuter och ämne till backend
+ 
     const saveSession = () => {
         const minutes = Math.floor(seconds / 60);
-
-        // Kräver minst 1 minut för att kunna spara
         if (minutes < 1) return;
-
-        setIsRunning(false); // Pausar timern
-
+ 
+        setIsRunning(false);
+ 
         router.post('/study', { minutes, subject }, {
             preserveScroll: true,
             preserveState: true,
+            onSuccess: () => {
+                // Triggar refresh() i SessionHistory efter sparad session
+                onSaved?.();
+            },
         });
     };
-
+ 
     const displayMinutes = Math.floor(seconds / 60);
     const displaySeconds = seconds % 60;
-    const earnedXp = displayMinutes * 10; // XP som kommer sparas
-
+    const earnedXp = displayMinutes * 10;
+ 
     return (
         <div className="bg-white rounded-3xl shadow-xl p-10 max-w-md mx-auto">
             <div className="text-center">
                 <h2 className="text-2xl font-bold text-gray-800 mb-8">Study Timer</h2>
-
-                {/* ProgressBar synkad med verklig XP från databasen */}
+ 
                 <ProgressBar
                     xp={user.xp}
                     level={user.level}
                     nextLevelXp={nextLevelXp}
                 />
-
+ 
                 <div className="text-8xl font-mono font-bold text-indigo-600 my-10">
                     {displayMinutes.toString().padStart(2, '0')}:
                     {displaySeconds.toString().padStart(2, '0')}
                 </div>
-
-                {/* Dropdown för att välja ämne */}
+ 
                 <select
                     value={subject}
                     onChange={e => setSubject(e.target.value)}
@@ -79,7 +75,7 @@ export default function StudyTimer() {
                     <option>Matte</option>
                     <option>Historia</option>
                 </select>
-
+ 
                 <div className="flex gap-4 justify-center mb-4">
                     <button
                         onClick={toggleTimer}
@@ -91,7 +87,7 @@ export default function StudyTimer() {
                     >
                         {isRunning ? 'PAUSA' : 'STARTA'}
                     </button>
-
+ 
                     <button
                         onClick={resetTimer}
                         className="px-8 py-4 rounded-2xl text-lg font-semibold bg-gray-200 hover:bg-gray-300 transition-all"
@@ -99,8 +95,7 @@ export default function StudyTimer() {
                         ÅTERSTÄLL
                     </button>
                 </div>
-
-                {/* Spara-knapp — grå och inaktiv om mindre än 1 minut har gått */}
+ 
                 <button
                     onClick={saveSession}
                     disabled={displayMinutes < 1}

@@ -1,4 +1,5 @@
 <?php
+trigger_error("Visa mig stack trace", E_USER_ERROR);
 
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
